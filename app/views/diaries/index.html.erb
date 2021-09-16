@@ -1,0 +1,55 @@
+<p id="notice"><%= notice %></p>
+
+<div class="diary-title">ポジティブ日記</div>
+<p class="diary-text">今日あったいいこと、頑張ったこと、できたことをなんでもいいので書いて自分を褒めましょう！</p> 
+
+
+<br>
+<div class="diary-post">
+<%= link_to '日記をかく', new_diary_path %>
+</div>
+
+<%= month_calendar events: @diarys do |date, diarys| %>
+  <%= date.day %>
+
+  <% diarys.each do |diary| %>
+    <div>
+      <%= link_to diary.title, diary %>
+    </div>
+    <% end %>
+    
+    <% if diarys.length > 2 %>
+    <%= paginate @diarys, :params_name => 'calendar' %>
+    <% end %>
+
+<% end %>
+
+<tbody>
+<%= page_entries_info @diarys %>
+
+<table>
+  <thead>
+    <tr>
+      <th>タイトル</th>
+      <th>時間</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+  <%= page_entries_info @vactine %>
+
+    <% @vactine.each do |d| %>
+      <tr>
+          <td><%= d.title %></td>
+          <td><%= d.start_time.strftime("%Y-%m-%d %H:%M") %></td>
+
+          <td><%= link_to '詳細', d %></td>
+          <td><%= link_to '編集', edit_diary_path(d.id) %></td>
+          <td><%= link_to '削除',diary_path(d.id), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<%= paginate @vactine , :param_name => 'index' %>

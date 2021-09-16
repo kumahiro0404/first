@@ -1,0 +1,88 @@
+
+<h1 class ="heading">
+<p>ここにはあなたを否定したりする人はいません<br>
+人に話しづらい悩み事、辛いこと、困っていることを吐き出しましょう</p>
+<%= link_to "新規投稿へ", new_post_path %>
+</h1>
+
+<div class = "search-container">
+  <div> 投稿を検索 </div> 
+  <%= form_tag({controller:"posts",action:"index"}, method: :get, class:'search-form' ) do %>
+    <%= text_field_tag :search %>
+    <%= button_tag :type => "submit", :class =>"search-button" do %>
+      <i class="fa fa-search"></i>
+    <% end %>  
+    <% end %>
+  <br>
+
+  <%= form_tag posts_path, method: :get, class: 'boards__searchForm' do %>
+    <%= select_tag :tag_id,
+        options_from_collection_for_select(Tag.all, :id, :name, params[:tag_id]),
+          {
+            prompt: 'タグで絞り込み検索',
+            onchange: 'submit(this.form);'
+            }
+    %>
+<% end %>
+</div>
+
+<h2 class = "post-index"> 投稿一覧 </div>
+
+<div class="posts-container">
+  <a class = "pagenate"><%= paginate @posts %></a>
+  <% @posts.each do |p| %>
+    <div class="post">
+      <a class="post-name"href="/users/<%= p.user.id %>"><%= p.user.name %></a><br>
+      <p class= "post-title"><%= p.title %></p>
+      <p class= "post-body"><%= p.body %></p>
+      <% if p.image? %>
+      <p class= "post-image"><%= image_tag p.image_url, size: "250x200" if p.image? %></p>
+      <% end %>
+      <br>
+      <p class= "post-tags"><% p.tags.each do |tag| %></p>
+      <span class= "tag"><%= tag.name %></span><br>
+      <% end %>
+
+      
+    <% if user_signed_in? %>
+      <% if current_user.already_liked?(p) %>
+          <%= link_to post_like_path(id: p.id, post_id: p.id), method: :delete do %>
+            <i class="fas fa-heart"></i><%= p.likes.count %>
+          <% end %>
+      <% else %>
+          <%= link_to post_likes_path(id: p.id, post_id: p.id), method: :post do %>
+            <i class="far fa-heart"></i><%= p.likes.count %>
+          <% end %>
+      <% end %>
+    <% else %>
+    <i class="far fa-heart"></i><%= p.likes.count %>
+    <% end %>
+
+      <%= p.created_at %>
+    <%= link_to "詳細へ", post_path(p.id) %>
+    <% if user_signed_in? && current_user.id == p.user_id  %> 
+      <%= link_to "編集する", edit_post_path(p.id) %>
+      <%= button_to "削除する", post_path(p.id), method: :delete %>
+    <% elsif current_user == @user || current_user.admin? %>
+      <%= link_to "編集する", edit_post_path(p.id) %>
+    <%= button_to "削除する", post_path(p.id), method: :delete %>
+    
+    <% end %>
+
+    <% if user_signed_in? %>
+      <% if current_user != p.user %>
+        <% if p.user.followed_by?(current_user) %>
+            <p><%=link_to "フォロー済み", user_relationships_path(p.user.id), method: :delete %></p>
+        <% else %>
+            <p><%=link_to "フォローする", user_relationships_path(p.user.id), method: :post %></p>
+        <% end %>
+      <% end %>
+    <% end %>
+    </div>
+
+  <% end %>
+  <%= page_entries_info @posts %>
+  <%= paginate @posts %>
+</div>
+
+

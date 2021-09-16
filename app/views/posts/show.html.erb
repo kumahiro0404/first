@@ -1,0 +1,75 @@
+<div class= "post-show">投稿詳細</div>
+<div class="post">
+  <a href="/users/<%= @post.user.id %>"><%= @post.user.name %></a>
+  <p class="post-title"><%= @post.title %></p>
+  <p class="post-body"><%= @post.body %></p>
+  <% if @post.image? %>
+  <p class= "post-image"><%= image_tag @post.image_url, size: "250x200" if @post.image? %></p>
+  <% end %>
+  <p><%= @post.created_at %></p>
+
+  <% @post.tags.each do |tag| %>
+    <span class= "tag"><%= tag.name %></span>
+  <% end %>
+
+  <% if user_signed_in? && current_user.id == @post.user_id %>
+    <%= link_to "編集する", edit_post_path(@post.id) %>
+    <%= button_to "削除する", post_path(@post.id), method: :delete %>
+  <% end %>
+
+  <% if current_user != @post.user %>
+        <% if @post.user.followed_by?(current_user) %>
+            <p class="follow"><%=link_to "フォロー済み", user_relationships_path(@post.user.id), method: :delete %></p>
+        <% else %>
+            <p class="follow"><%=link_to "フォローする", user_relationships_path(@post.user.id), method: :post %></p>
+        <% end %>
+    <% end %>
+
+
+  <% if user_signed_in? %>
+      <% if current_user.already_liked?(@post) %>
+          <%= link_to post_like_path(@post), method: :delete do %>
+          <i class="fas fa-heart"></i><%= @post.likes.count %>
+
+          <% end %>
+      <% else %>
+          <%= link_to post_likes_path(@post), method: :post do %>
+          <i class="far fa-heart"></i><%= @post.likes.count %>
+          <% end %>
+      <% end %>
+  <% else %>
+      <p>いいねの数 = </p><%= @post.likes.count %>
+  <% end %>
+
+  <div class="comment-wrapper">
+  <p>コメント一覧</p>
+  <% @comments.each do |c| %>
+    <div>
+      <%= c.user.name unless c.user.blank? %>
+      <br>
+      <%= c.content %>
+    </div>
+      <br>
+      <% if user_signed_in? && current_user.id == c.user_id  %> 
+        <%= button_to "削除する", post_comment_path(c.post.id, c.id), method: :delete %>
+      <% elsif current_user == @user || current_user.admin? %>
+        <%= button_to "削除する", post_comment_path(c.post.id, c.id), method: :delete %>
+      <% end %>
+
+
+  <% end %>
+
+  <% if user_signed_in? %>
+    <%= form_with(model: [@post, @comment], local: true) do |f| %>
+      <%= f.text_area :content %><br>
+      <%= button_tag type: "submit" do %>
+        <i class="far fa-comments"></i> コメントする
+      <% end %>
+    <% end %>
+  <% end %>
+</div>
+
+</div>
+<div class= "back">
+<%= link_to "投稿一覧に戻る", posts_path %>
+</div>
